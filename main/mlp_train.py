@@ -1,5 +1,12 @@
 import numpy as np
 
+# 1. Save activations and derivatives
+# 2. Implement BackPropagation
+# 3. Implement Gradient Descent
+# 4. Implement trainning
+# 5. Train our net with some dummy dataset
+# 6. Make some predictions
+
 class MLP:
     """A Multilayer Perceptron class.
     """
@@ -35,6 +42,20 @@ class MLP:
             print("-------------------------")
             self.weights.append(w)
 
+        # List of arrays where each array in the list represents the activations for a given layer
+        activations = []
+        for i in range(len(layers)):
+            a = np.zeros(layers[i])
+            activations.append(a)
+        self.activations = activations
+
+        derivatives = []
+        # Derivatives must have the same number as the weight's number
+        for i in range(len(layers) - 1):
+            d = np.zeros((layers[i], layers[i + 1]))
+            derivatives.append(d)
+        self.derivatives = derivatives
+
     def forward_propagate(self, inputs):
         """Computes forward propagation of the network based on input signals.
 
@@ -46,16 +67,18 @@ class MLP:
 
         # The input layer activation is just the input itself
         activations = inputs
+        self.derivatives[0] = inputs
 
         # Iterate through the network layers
-        for w in self.weights:
+        for i, w in enumerate(self.weights):
             # Calculate matrix multiplication between previous activation and weight matrix
             # Calculate net inputs
             net_inputs = np.dot(activations, w)
 
             # Apply sigmoid activation function
             # Calculate the activations
-            activations = self._sigmoid(net_inputs)
+            activations = self._sigmoid(net_inputs)     # a_3 = sigmoid(h_3)
+            self.derivatives[i + 1] = activations       # h_3 = a_2 * W_2
 
         # Return output layer activation
         return activations
