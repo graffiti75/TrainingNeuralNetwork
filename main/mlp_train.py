@@ -83,6 +83,40 @@ class MLP:
         # Return output layer activation
         return activations
 
+    def back_propagate(self, error):
+        # x = input layer, W = weights between each neuron layer
+        # h_2 = x W_2
+        # a_2 = f(h_2)
+        #
+        # h_3 = a_2 W_2
+        # y = f(h_3)
+        #
+        # y = The outcome we are expecting
+        # a = The prediction we got
+        #
+        # dE/dW_i = (y - a_[i + 1]) . σ'(h_[i + 1])) . a_i
+        # dE/dW_i = error . σ'(h_[i + 1]) . a_i
+        # σ'(h_[i + 1]) = σ(h_[i + 1])(1 - σ(h_[i + 1]))
+        # σ(h_[i + 1]) = a_[i + 1]
+
+        # dE/dW_[i - 1] = (y - a_[i + 1]) . σ'(h_[i + 1])) . W_i . σ'(h_i) . a_[i - 1]
+
+        for i in reversed(range(len(self.derivatives))):
+            # activations = h_[i + 1]
+            activations = self.activations[i + 1]
+            # error = (y - a_[i + 1])
+            delta = error * self._sigmoid_derivative(activations) # ndarray([0.1, 0.2]) -> ndarray([[0.1, 0.2]])
+            delta_reshaped = delta.reshape(delta.shape[0], -1).T
+            current_activations = self.activations[i] # ndarray([0.1, 0.2]) -> ndarray([[0.1], [0.2]])
+            current_activations_reshaped = current_activations.reshape(current_activations.shape[0], -1)
+            self.derivatives[i] = np.dot(current_activations_reshaped, delta_reshaped)
+            # error = (y - a_[i + 1]) . σ'(h_[i + 1])) . W_i
+            error = np.dot(delta, self.weights[i].T)
+        return error
+
+    def _sigmoid_derivative(self, x):
+        return x * (1.0 - x)
+
     def _sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
