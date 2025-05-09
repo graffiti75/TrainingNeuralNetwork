@@ -126,6 +126,31 @@ class MLP:
             weights += derivatives * learning_rate
             print("Updated W{} {}".format(i, weights))
 
+    def training(self, inputs, targets, epochs, learning_rate):
+        for i in range(epochs):
+            sum_error = 0
+            for input, target in zip(inputs, targets):
+                # Perform forward propagation
+                output = self.forward_propagate(input)
+
+                # Calculate error
+                error = target - output
+
+                # Perform back propagation
+                self.back_propagate(error)
+
+                # Apply gradient descent
+                self.gradient_descent(learning_rate)
+
+                sum_error += self._mse(target, output)
+
+            # Report error
+            print("Error: {} at epoch {}".format(sum_error / len(inputs), i))
+
+    # Mean Squared Error
+    def _mse(self, target, output):
+        return np.average((target - output) ** 2)
+
     def _sigmoid_derivative(self, x):
         return x * (1.0 - x)
 
@@ -139,15 +164,3 @@ if __name__ == "__main__":
     # Create dummy data
     input = np.array([0.1, 0.2])
     target = np.array([0.3])
-
-    # Perform forward propagation
-    output = mlp.forward_propagate(input)
-
-    # Calculate error
-    error = target - output
-
-    # Perform back propagation
-    mlp.back_propagate(error)
-
-    # Apply gradient descent
-    mlp.gradient_descent(learning_rate = 0.1)
