@@ -3,7 +3,7 @@ import numpy as np
 # 1. Save activations and derivatives
 # 2. Implement BackPropagation
 # 3. Implement Gradient Descent
-# 4. Implement trainning
+# 4. Implement training
 # 5. Train our net with some dummy dataset
 # 6. Make some predictions
 
@@ -11,7 +11,7 @@ class MLP:
     """A Multilayer Perceptron class.
     """
 
-    def __init__(self, num_inputs = 3, hidden_layers = [3, 5], num_outputs = 2):
+    def __init__(self, num_inputs = 3, hidden_layers = [3, 3], num_outputs = 2):
         """Constructor for the MLP. Takes the number of inputs,
             a variable number of hidden layers, and number of outputs
 
@@ -33,13 +33,13 @@ class MLP:
         self.weights = []
         for i in range(len(layers) - 1):
             w = np.random.rand(layers[i], layers[i + 1])
-            print("-------------------------")
-            print("i: {}".format(i))
-            print("layers[i]: {}".format(layers[i]))
-            print("layers[i + 1]: {}".format(layers[i + 1]))
-            print("layers: {}".format(layers))
-            print("w: {}".format(w))
-            print("-------------------------")
+            # print("-------------------------")
+            # print("i: {}".format(i))
+            # print("layers[i]: {}".format(layers[i]))
+            # print("layers[i + 1]: {}".format(layers[i + 1]))
+            # print("layers: {}".format(layers))
+            # print("w: {}".format(w))
+            # print("-------------------------")
             self.weights.append(w)
 
         # List of arrays where each array in the list represents the activations for a given layer
@@ -78,12 +78,12 @@ class MLP:
             # Apply sigmoid activation function
             # Calculate the activations
             activations = self._sigmoid(net_inputs)     # a_3 = sigmoid(h_3)
-            self.derivatives[i + 1] = activations       # h_3 = a_2 * W_2
+            self.activations[i + 1] = activations       # h_3 = a_2 * W_2
 
         # Return output layer activation
         return activations
 
-    def back_propagate(self, error):
+    def back_propagate(self, error, verbose = False):
         # x = input layer, W = weights between each neuron layer
         # h_2 = x W_2
         # a_2 = f(h_2)
@@ -112,7 +112,19 @@ class MLP:
             self.derivatives[i] = np.dot(current_activations_reshaped, delta_reshaped)
             # error = (y - a_[i + 1]) . σ'(h_[i + 1])) . W_i
             error = np.dot(delta, self.weights[i].T)
+
+            if verbose:
+                print("Derivatives for W{}: {}".format(i, self.derivatives[i]))
+
         return error
+
+    def gradient_descent(self, learning_rate):
+        for i in range(len(self.weights)):
+            weights = self.weights[i]
+            print("Original W{} {}".format(i, weights))
+            derivatives = self.derivatives[i]
+            weights += derivatives * learning_rate
+            print("Updated W{} {}".format(i, weights))
 
     def _sigmoid_derivative(self, x):
         return x * (1.0 - x)
@@ -121,15 +133,21 @@ class MLP:
         return 1 / (1 + np.exp(-x))
 
 if __name__ == "__main__":
-    # Create an MPL
-    mlp = MLP()
+    # Create a MPL (2 inputs, 1 hidden layer with 5 neurons, 1 output layer with 1 neuron)
+    mlp = MLP(2, [5], 1)
 
-    # Create some inputs
-    inputs = np.random.rand(mlp.num_inputs)
+    # Create dummy data
+    input = np.array([0.1, 0.2])
+    target = np.array([0.3])
 
     # Perform forward propagation
-    outputs = mlp.forward_propagate(inputs)
+    output = mlp.forward_propagate(input)
 
-    # Print the results
-    print("The network input is: {}".format(inputs))
-    print("The network output is: {}".format(outputs))
+    # Calculate error
+    error = target - output
+
+    # Perform back propagation
+    mlp.back_propagate(error)
+
+    # Apply gradient descent
+    mlp.gradient_descent(learning_rate = 0.1)
